@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 
-Scripts to import scanimage tiff files and meta info, with thanks to Tobias Rose for the regular expressions.
+Scripts to import scanimage tiff files and meta info, with thanks to Tobias Rose for some of the regular expressions.
 
 Requires ScanImageTiffReader
 https://vidriotech.gitlab.io/scanimagetiffreader-python/
@@ -19,7 +19,7 @@ Created on Thu Jan 30, 2020
 from ScanImageTiffReader import ScanImageTiffReader
 import re
 
-def scanimage_parseheader(header):
+def parseheader(header):
     print(header)
     rx_dict = {
         "stackNumSlices": re.compile(r'stackNumSlices = (?P<stackNumSlices>\d+)'),
@@ -60,6 +60,6 @@ if __name__ == '__main__':
         header = (tifffile.description(0))
         dimensions = (tifffile.shape())
         print("Image stack dimensions: {}".format(dimensions))
-        si_info = scanimage_parseheader(header)
+        si_info = parseheader(header)
         for k,v in si_info.items():
             print("    - {}: {}".format(k,v))
