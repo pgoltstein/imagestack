@@ -4,7 +4,7 @@ Contains functions to handle complete scanImage stacks (consisting of multiple t
 for now only works for XYT stacks or XYT stack using fastZ.
 
 __Installation__
-```python
+```
 pip install --upgrade https://github.com/pgoltstein/scanimagestack/archive/v0.11.tar.gz
 ```
 
