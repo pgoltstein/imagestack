@@ -1,19 +1,22 @@
-# scanimagestack
-Contains functions to handle complete scanImage stacks (consisting of multiple tiff blocks).
+# imagestack
 
-for now only works for XYT stacks or XYT stack using fastZ.
+Contains functions to handle complete image stacks (consisting of multiple tiff blocks (ScanImage), or (in the future) binary files).
+
+for now only works for XYT ScanImage stacks or multilevel XYT ScanImage stacks using fastZ.
 
 __Installation__
 ```
-pip install --upgrade https://github.com/pgoltstein/scanimagestack/archive/v0.11.tar.gz
+pip install --upgrade https://github.com/pgoltstein/imagestack/archive/v0.11.tar.gz
 ```
 
 
-__Contains__
-* _def parseheader(header)_
+__Contains__  
+
+scanimagestack (module)
+* _scanimagestack.parseheader(header)_  
     This function reads the most relevant information from the tiff header of a scanimage tiff.
-* _class imagestack(object)_
-    This class represents an entire (multi-tiff) scanimage stack. Image channel and image plane should be set manually (defaults are 0).
+* _scanimagestack.xyt(object)_  
+    This class represents an entire (multi-tiff) ScanImage stack. Image channel and image plane should be set manually (defaults are 0).
 
     The class can load the image data using standard np.ndarray indexing:
     * data = imagestack[:] returns all the data
@@ -37,9 +40,11 @@ __Requires the following python packages__
 
 
 __To do__
-* Test direct Github install and update
+* Add more meta data properties
 * Add support for manual metadata (.txt file)
+* Add xyz stack
 * Add support for binary stacks
 
+---
 
-Version 0.1 - April 3rd, 2020 - Pieter Goltstein
+Version 0.11 - April 9, 2020 - Pieter Goltstein
