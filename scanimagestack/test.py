@@ -24,10 +24,11 @@ args = parser.parse_args()
 # =============================================================================
 # Code
 
-im = xyt(filestem=args.filestem, filepath=args.filepath, extention="tif")
-a=im[[3,4,5]]
+im = si_stack.xyt(filestem=args.filestem, filepath=args.filepath, extention="tif")
+print("Reading the every 50th frame from the first 2000 frames:")
+a=im[:2000:50]
+# a=im[[3,4,5]]
 # a=im[3]
-# a=im[:100]
 # a=im[-100:]
 # a=im[-200:-100:2]
 # a=im[::25]
