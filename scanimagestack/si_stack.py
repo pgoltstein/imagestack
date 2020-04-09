@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 
-This module holds functions to import scanimage tiff files and gather the meta info stored in the headers. With thanks to Tobias Rose for some of the regular expressions.
+This module holds functions to import a scanimage tiff stack that consist of multiple tiff files, and gather the meta info stored in the headers. With thanks to Tobias Rose for some of the regular expressions and others that worked on the various dependencies.
 
-Requires ScanImageTiffReader and re (regular expressions)
+Requires ScanImageTiffReader
 https://vidriotech.gitlab.io/scanimagetiffreader-python/
 
 Created on Thu Jan 30, 2020
@@ -95,8 +95,8 @@ def parseheader(header):
 # =============================================================================
 # Classes
 
-class imagestack(object):
-    """ This class represents an entire (multi-tiff) scanimage stack. Image channel and image plane should be set manually (defaults are 0).
+class xyt(object):
+    """ This class represents an entire (multi-tiff) scanimage timeseries stack, either a single plane, or multi-plane aquired using fast z controls. Image channel and image plane should be set manually (defaults are 0).
 
         The class can load the image data using standard np.ndarray indexing:
          * data = imagestack[:] returns all the data
@@ -104,10 +104,10 @@ class imagestack(object):
          * data = imagestack[[5,8,10]] returns frames 5,8 and 10
          * data = imagestack[::2] returns every second frame.
 
-         In addition, the class has several methods for accessing the meta data, which can be accessed as properties. For instance:
-         * res = imagestack.resolution returns the [y,x] image resolution
-         * nchannels = imagestack.nchannels returns number of image channels
-    """
+         In addition, the class provides access to the meta data as properties. For instance:
+         * res = xyt.resolution returns the [y,x] image resolution
+         * nchannels = xyt.nchannels returns number of image channels
+    """s
 
     def __init__(self, filestem='', filepath=None, extention="tif"):
         """ Initializes the image stack and gathers the meta data
@@ -238,7 +238,7 @@ class imagestack(object):
 # Main, for testing from command line
 
 if __name__ == '__main__':
-    im = imagestack(filestem=args.filestem, filepath=args.filepath, extention="tif")
+    im = xyt(filestem=args.filestem, filepath=args.filepath, extention="tif")
     a=im[[3,4,5]]
     # a=im[3]
     # a=im[:100]
