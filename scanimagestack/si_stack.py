@@ -24,15 +24,6 @@ import argparse
 
 
 # =============================================================================
-# Arguments
-
-parser = argparse.ArgumentParser( description = "This module holds a dataclass calles imagestack and supporting functions. The main functionality is to handle imagestacks. Meta data can be accessed using simple dot-reference properties. Any slice of image data can be directly loaded from disk using Python's standard method of indexing slices directly on the imagestack class. Currently it supports stacks of scanimage tiff files only. With thanks to Tobias Rose for some of the regular expressions. The module can run from the command line for testing. \n (written by Pieter Goltstein - February 2020)")
-parser.add_argument('filepath', type=str, help= 'path to the tiff folder')
-parser.add_argument('filestem', type=str, help= 'filestem of tiffs')
-args = parser.parse_args()
-
-
-# =============================================================================
 # Functions
 
 def parseheader(header):
@@ -107,7 +98,7 @@ class xyt(object):
          In addition, the class provides access to the meta data as properties. For instance:
          * res = xyt.resolution returns the [y,x] image resolution
          * nchannels = xyt.nchannels returns number of image channels
-    """s
+    """
 
     def __init__(self, filestem='', filepath=None, extention="tif"):
         """ Initializes the image stack and gathers the meta data
@@ -233,15 +224,3 @@ class xyt(object):
 
         # Return the stack
         return imagedata
-
-# =============================================================================
-# Main, for testing from command line
-
-if __name__ == '__main__':
-    im = xyt(filestem=args.filestem, filepath=args.filepath, extention="tif")
-    a=im[[3,4,5]]
-    # a=im[3]
-    # a=im[:100]
-    # a=im[-100:]
-    # a=im[-200:-100:2]
-    # a=im[::25]
