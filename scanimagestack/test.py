@@ -24,11 +24,19 @@ args = parser.parse_args()
 # =============================================================================
 # Code
 
+print("\nTesting scanimagestack:")
 im = si_stack.xyt(filestem=args.filestem, filepath=args.filepath, extention="tif")
-print("Reading the every 50th frame from the first 2000 frames:")
+print("\nReading the every 50th frame from the first 2000 frames:")
 a=im[:2000:50]
-# a=im[[3,4,5]]
-# a=im[3]
-# a=im[-100:]
-# a=im[-200:-100:2]
-# a=im[::25]
+
+print("\nTesting properties:")
+print("- xres: {}".format(im.xres))
+print("- yres: {}".format(im.yres))
+print("- resolution: {}".format(im.resolution))
+print("- nframes: {}".format(im.nframes))
+print("- nplanes: {}".format(im.nplanes))
+print("- nchannels: {}".format(im.nchannels))
+print("- current channel: {}".format(im.channel))
+print("- current plane: {}".format(im.plane))
+
+print("\nDone testing\n")
