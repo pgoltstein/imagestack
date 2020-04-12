@@ -86,7 +86,7 @@ def parseheader(header):
 # =============================================================================
 # Classes
 
-class xyt(object):
+class XYT(object):
     """ This class represents an entire (multi-tiff) scanimage timeseries stack, either a single plane, or multi-plane aquired using fast z controls. Image channel and image plane should be set manually (defaults are 0).
 
         The class can load the image data using standard np.ndarray indexing:
@@ -96,8 +96,8 @@ class xyt(object):
          * data = imagestack[::2] returns every second frame.
 
          In addition, the class provides access to the meta data as properties. For instance:
-         * res = xyt.resolution returns the [y,x] image resolution
-         * nchannels = xyt.nchannels returns number of image channels
+         * res = XYT.resolution returns the [y,x] image resolution
+         * nchannels = XYT.nchannels returns number of image channels
     """
 
     def __init__(self, filestem='', filepath=None, extention="tif"):
@@ -107,6 +107,7 @@ class xyt(object):
             - filepath: Full directory path to the tiffs
             - extention: file extention of the stack
         """
+        super(XYT, self).__init__()
 
         # Set the filepath
         if filepath is not None:

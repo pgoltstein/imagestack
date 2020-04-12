@@ -25,7 +25,7 @@ args = parser.parse_args()
 # Code
 
 print("\nTesting scanimagestack:")
-im = si_stack.xyt(filestem=args.filestem, filepath=args.filepath, extention="tif")
+im = si_stack.XYT(filestem=args.filestem, filepath=args.filepath, extention="tif")
 print("\nReading the every 50th frame from the first 2000 frames:")
 a=im[:2000:50]
 
