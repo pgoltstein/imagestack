@@ -4,6 +4,9 @@
 
 This script tests the module scanimagestack.
 
+Run from command line as
+>> python -m test fullpath filestem
+
 Created on Thu Jan 30, 2020
 
 @author: pgoltstein
@@ -15,7 +18,7 @@ import argparse
 # =============================================================================
 # Arguments
 
-parser = argparse.ArgumentParser( description = "This script tests the module scanimagestack.\n (written by Pieter Goltstein - February 2020)")
+parser = argparse.ArgumentParser( description = "This script tests the module scanimagestack. Run from command line as >> python -m test fullpath filestem. Written by Pieter Goltstein - February 2020")
 parser.add_argument('filepath', type=str, help= 'path to the tiff folder')
 parser.add_argument('filestem', type=str, help= 'filestem of tiffs')
 args = parser.parse_args()
