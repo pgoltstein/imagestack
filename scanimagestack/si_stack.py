@@ -100,7 +100,7 @@ class XYT(object):
          * nchannels = XYT.nchannels returns number of image channels
     """
 
-    def __init__(self, filestem='', filepath=None, extention="tif"):
+    def __init__(self, filestem='', filepath='.', extention="tif"):
         """ Initializes the image stack and gathers the meta data
             Inputs
             - filestem: Part of the file name that is shared among all tiffs belonging to the stack (optional, if left out all tiffs in filepath will be included)
@@ -110,10 +110,7 @@ class XYT(object):
         super(XYT, self).__init__()
 
         # Set the filepath
-        if filepath is not None:
-            self.filepath = filepath
-        else:
-            self.filepath = os.getcwd()
+        self.filepath = filepath
 
         # Find the tiff files
         self.block_files = sorted( glob.glob( os.path.join( self.filepath, filestem+'*.'+extention ) ) )
