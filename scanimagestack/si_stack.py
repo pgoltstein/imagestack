@@ -100,34 +100,51 @@ class XYT(object):
          * nchannels = XYT.nchannels returns number of image channels
     """
 
-    def __init__(self, filestem='', filepath='.', extention="tif"):
+    def __init__(self, filestem='', filepath='.', extention="tif", imagesettingsfile=None):
         """ Initializes the image stack and gathers the meta data
             Inputs
             - filestem: Part of the file name that is shared among all tiffs belonging to the stack (optional, if left out all tiffs in filepath will be included)
             - filepath: Full directory path to the tiffs
             - extention: file extention of the stack
+            - imagesettingsfile: manually stored image settings
         """
         super(XYT, self).__init__()
 
         # Set the filepath
-        self.filepath = filepath
+        self._filepath = filepath
+        self._extention = extention
 
         # Find the tiff files
-        self.block_files = sorted( glob.glob( os.path.join( self.filepath, filestem+'*.'+extention ) ) )
-        self._nblocks = len(self.block_files)
-        print("Imagestack of {} {} files, using filestem {}".format( self._nblocks, extention, filestem+'*.'+extention))
+        self._block_files = sorted( glob.glob( os.path.join( self._filepath, filestem+'*.'+extention ) ) )
+        self._nblocks = len(self._block_files)
 
         # Load and parse the header
-        with ScanImageTiffReader( self.block_files[0] ) as tifffile:
+        with ScanImageTiffReader( self._block_files[0] ) as tifffile:
             header = (tifffile.description(0))
             self.si_info = parseheader(header)
         self._nframesperblock = self.si_info["loggingFramesPerFile"]
-        print("{} frames, {} planes, {} channels, {} x {} pixels".format( self.nframes, self.nplanes, self.nchannels, self.yres, self.xres ))
 
-        # Default settings of internal variables
+        # Load default settings and internal variables
+        if imagesettingsfile is None:
+            self_path = os.path.dirname(os.path.realpath(__file__))
+            imagesettingsfile = os.path.join(self_path,"default.imagesettings.py")
+        self._imagesettingsfile = imagesettingsfile
+        settings = {}
+        with open(imagesettingsfile) as f:
+            exec(f.read(), settings)
+            self._fovsize_for_zoom = settings["fovsize_for_zoom"]
+
         self._datatype = np.int16
         self._channel = 0
         self._plane = 0
+
+    # properties
+    def __str__(self):
+        """ Returns a printable string with summary output """
+        first_file = self._block_files[0].split(os.path.sep)[-1]
+
+        return "Imagestack of {} {} files, first file: {}\n* Image settings: {}\n* {} frames, {} planes, {} channels, {} x {} pixels".format( self._nblocks, self._extention, first_file, self._imagesettingsfile, self.nframes, self.nplanes, self.nchannels, self.yres, self.xres )
+
 
     @property
     def xres(self):
@@ -158,6 +175,30 @@ class XYT(object):
     def nchannels(self):
         """ Number of channels """
         return self.si_info["channelsSave"]
+
+    @property
+    def zoom(self):
+        """ Imaging zoom factor """
+        return self.si_info["scanZoomFactor"]
+
+    @property
+    def fovsize(self):
+        """ Size of the field of view """
+        if self.zoom in self._fovsize_for_zoom.keys():
+            return self._fovsize_for_zoom[self.zoom]
+        else:
+            print("FOV has not been calibrated for zoom {}x, returning np.NaNs".format(self.zoom))
+            return { "x": np.NaN, "y": np.NaN }
+
+    @property
+    def pixelsize(self):
+        """ size of a single pixel """
+        if self.zoom in self._fovsize_for_zoom.keys():
+            return { "x": self.xres / self._fovsize_for_zoom[self.zoom]["x"],
+                    "y": self.yres / self._fovsize_for_zoom[self.zoom]["y"] }
+        else:
+            print("FOV has not been calibrated for zoom {}x, returning np.NaNs".format(self.zoom))
+            return { "x": np.NaN, "y": np.NaN }
 
     @property
     def channel(self):
@@ -215,7 +256,7 @@ class XYT(object):
         imagedata = np.zeros((self.yres,self.xres,n_frame_ixs),dtype=self._datatype)
         with alive_bar(n_frame_ixs) as bar:
             for bnr,bix in zip(block_numbers,block_indexes):
-                with ScanImageTiffReader(self.block_files[bnr]) as tifffile:
+                with ScanImageTiffReader(self._block_files[bnr]) as tifffile:
                     for ix,id_ in zip( frame_ixs_per_block[bix], frame_ids_per_block[bix] ):
                         imagedata[:,:,id_] = tifffile.data(beg=ix,end=ix+1)
                         bar()
