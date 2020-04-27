@@ -111,7 +111,7 @@ class XYT(object):
         super(XYT, self).__init__()
 
         # Set the filepath
-        self._filepath = filepath
+        self._filepath = filepath[2]
         self._extention = extention
 
         # Find the tiff files
@@ -127,6 +127,7 @@ class XYT(object):
         # Load default settings and internal variables
         if imagesettingsfile is None:
             self_path = os.path.dirname(os.path.realpath(__file__))
+            settings_path = os.path.join( self_path.split(os.path.sep)[:-1].join(os.path.sep), "settings" )
             imagesettingsfile = os.path.join(self_path,"default.imagesettings.py")
         self._imagesettingsfile = imagesettingsfile
         settings = {}
@@ -142,7 +143,6 @@ class XYT(object):
     def __str__(self):
         """ Returns a printable string with summary output """
         first_file = self._block_files[0].split(os.path.sep)[-1]
-
         return "Imagestack of {} {} files, first file: {}\n* Image settings: {}\n* {} frames, {} planes, {} channels, {} x {} pixels".format( self._nblocks, self._extention, first_file, self._imagesettingsfile, self.nframes, self.nplanes, self.nchannels, self.yres, self.xres )
 
 
