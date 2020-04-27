@@ -111,7 +111,7 @@ class XYT(object):
         super(XYT, self).__init__()
 
         # Set the filepath
-        self._filepath = filepath[2]
+        self._filepath = filepath
         self._extention = extention
 
         # Find the tiff files
