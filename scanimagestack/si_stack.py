@@ -127,8 +127,8 @@ class XYT(object):
         # Load default settings and internal variables
         if imagesettingsfile is None:
             self_path = os.path.dirname(os.path.realpath(__file__))
-            settings_path = os.path.join( self_path.split(os.path.sep)[:-1].join(os.path.sep), "settings" )
-            imagesettingsfile = os.path.join(self_path,"default.imagesettings.py")
+            settings_path = os.path.join( os.path.sep.join(  self_path.split(os.path.sep)[:-1] ), "settings" )
+            imagesettingsfile = os.path.join(settings_path,"default.imagesettings.py")
         self._imagesettingsfile = imagesettingsfile
         settings = {}
         with open(imagesettingsfile) as f:
