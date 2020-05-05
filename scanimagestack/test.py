@@ -41,5 +41,7 @@ print("- nplanes: {}".format(im.nplanes))
 print("- nchannels: {}".format(im.nchannels))
 print("- current channel: {}".format(im.channel))
 print("- current plane: {}".format(im.plane))
+print("- FOV size: {}".format(im.fovsize))
+print("- Pixel size: {}".format(im.pixelsize))
 
 print("\nDone testing\n")

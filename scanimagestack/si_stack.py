@@ -41,6 +41,7 @@ def parseheader(header):
         "scanFrameRate": re.compile(r'scanFrameRate = (?P<scanFrameRate>\d+.?\d*)'),
         "channelsSave": re.compile(r'channelsSave = (?P<channelsSave>\d+)'),
         "fastZNumVolumes": re.compile(r'fastZNumVolumes = (?P<fastZNumVolumes>\d+)'),
+        "fastZEnable": re.compile(r'fastZEnable = (?P<fastZEnable>\d+)'),
         "triggerClockTimeFirst": re.compile(r'triggerClockTimeFirst = (?P<triggerClockTimeFirst>\'\d+-\d+-\d+ \d+:\d+:\d+.\d+\')'),
         "loggingFramesPerFile": re.compile(r'loggingFramesPerFile = (?P<loggingFramesPerFile>\d+)'),
         "beamPowers": re.compile(r'beamPowers = (?P<beamPowers>\d+.?\d*)'),
@@ -53,6 +54,8 @@ def parseheader(header):
         "stackZStartPos": re.compile(r'stackZStartPos = (?P<stackZStartPos>\d+.?\d*)'),
         "stackZStepSize": re.compile(r'stackZStepSize = (?P<stackZStepSize>\d+.?\d*)'),
     }
+
+    print(header)
 
     # Now step through the dictionary and extract the information as int, float, string or a list of floats
     si_info = {}
@@ -149,41 +152,44 @@ class XYT(object):
     @property
     def xres(self):
         """ Number of pixels along the x-axis """
-        return self.si_info["scanPixelsPerLine"]
+        return int(self.si_info["scanPixelsPerLine"])
 
     @property
     def yres(self):
         """ Number of pixels along the y-axis """
-        return self.si_info["scanLinesPerFrame"]
+        return int(self.si_info["scanLinesPerFrame"])
 
     @property
     def resolution(self):
         """ Number of pixels along the y- and x-axis """
-        return self.si_info["scanLinesPerFrame"], self.si_info["scanPixelsPerLine"]
+        return int(self.si_info["scanLinesPerFrame"]), int(self.si_info["scanPixelsPerLine"])
 
     @property
     def nframes(self):
         """ Number of frames per slice and channel """
-        return self.si_info["fastZNumVolumes"]
+        return int(self.si_info["fastZNumVolumes"])
 
     @property
     def nplanes(self):
         """ Number of planes """
-        return self.si_info["stackNumSlices"]
+        if self.si_info["stackNumSlices"] > 0:
+            return int(self.si_info["stackNumSlices"])
+        else:
+            return int(1)
 
     @property
     def nchannels(self):
         """ Number of channels """
-        return self.si_info["channelsSave"]
+        return int(self.si_info["channelsSave"])
 
     @property
     def zoom(self):
         """ Imaging zoom factor """
-        return self.si_info["scanZoomFactor"]
+        return float(self.si_info["scanZoomFactor"])
 
     @property
     def fovsize(self):
-        """ Size of the field of view """
+        """ Size of the field of view in micron"""
         if self.zoom in self._fovsize_for_zoom.keys():
             return self._fovsize_for_zoom[self.zoom]
         else:
@@ -192,7 +198,7 @@ class XYT(object):
 
     @property
     def pixelsize(self):
-        """ size of a single pixel """
+        """ Size of a single pixel in micron """
         if self.zoom in self._fovsize_for_zoom.keys():
             return { "x": self.xres / self._fovsize_for_zoom[self.zoom]["x"],
                     "y": self.yres / self._fovsize_for_zoom[self.zoom]["y"] }
