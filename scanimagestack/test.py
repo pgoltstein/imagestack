@@ -28,20 +28,24 @@ args = parser.parse_args()
 # Code
 
 print("\nTesting scanimagestack:")
-im = si_stack.XYT(filestem=args.filestem, filepath=args.filepath, extention="tif")
-print("\nReading the every 50th frame from the first 2000 frames:")
-a=im[:2000:50]
+Im = si_stack.XYT(filestem=args.filestem, filepath=args.filepath, extention="tif")
+print("\nReading the every 50th frame from the first 1000 frames:")
+a=Im[:1000:50]
 
 print("\nTesting properties:")
-print("- xres: {}".format(im.xres))
-print("- yres: {}".format(im.yres))
-print("- resolution: {}".format(im.resolution))
-print("- nframes: {}".format(im.nframes))
-print("- nplanes: {}".format(im.nplanes))
-print("- nchannels: {}".format(im.nchannels))
-print("- current channel: {}".format(im.channel))
-print("- current plane: {}".format(im.plane))
-print("- FOV size: {}".format(im.fovsize))
-print("- Pixel size: {}".format(im.pixelsize))
+print("- xres: {}".format(Im.xres))
+print("- yres: {}".format(Im.yres))
+print("- resolution: {}".format(Im.resolution))
+print("- nframes: {}".format(Im.nframes))
+print("- nplanes: {}".format(Im.nplanes))
+print("- nchannels: {}".format(Im.nchannels))
+print("- zoom: {}".format(Im.zoom))
+print("- zstep: {}".format(Im.zstep))
+print("- FOV size: {}".format(Im.fovsize))
+print("- Pixel size: {}".format(Im.pixelsize))
+print("- current channel: {}".format(Im.channel))
+print("- current plane: {}".format(Im.plane))
+
+Im.register = True
 
 print("\nDone testing\n")

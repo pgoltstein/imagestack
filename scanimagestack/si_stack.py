@@ -4,7 +4,7 @@
 
 This module holds functions to import a scanimage tiff stack that consist of multiple tiff files, and gather the meta info stored in the headers. With thanks to Tobias Rose for some of the regular expressions and others that worked on the various dependencies.
 
-Requires ScanImageTiffReader
+Requires ScanImageTiffReader and suite2p
 https://vidriotech.gitlab.io/scanimagetiffreader-python/
 
 Created on Thu Jan 30, 2020
@@ -12,18 +12,18 @@ Created on Thu Jan 30, 2020
 @author: pgoltstein
 """
 
-# =============================================================================
+#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 # Imports
 
 import os, glob
 import re
 import numpy as np
-from alive_progress import alive_bar
 from ScanImageTiffReader import ScanImageTiffReader
+from alive_progress import alive_bar
 import argparse
 
 
-# =============================================================================
+#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 # Functions
 
 def parseheader(header):
@@ -42,6 +42,7 @@ def parseheader(header):
         "channelsSave": re.compile(r'channelsSave = (?P<channelsSave>\d+)'),
         "fastZNumVolumes": re.compile(r'fastZNumVolumes = (?P<fastZNumVolumes>\d+)'),
         "fastZEnable": re.compile(r'fastZEnable = (?P<fastZEnable>\d+)'),
+        "stackZStepSize": re.compile(r'stackZStepSize = (?P<stackZStepSize>\d+)'),
         "triggerClockTimeFirst": re.compile(r'triggerClockTimeFirst = (?P<triggerClockTimeFirst>\'\d+-\d+-\d+ \d+:\d+:\d+.\d+\')'),
         "loggingFramesPerFile": re.compile(r'loggingFramesPerFile = (?P<loggingFramesPerFile>\d+)'),
         "beamPowers": re.compile(r'beamPowers = (?P<beamPowers>\d+.?\d*)'),
@@ -54,8 +55,6 @@ def parseheader(header):
         "stackZStartPos": re.compile(r'stackZStartPos = (?P<stackZStartPos>\d+.?\d*)'),
         "stackZStepSize": re.compile(r'stackZStepSize = (?P<stackZStepSize>\d+.?\d*)'),
     }
-
-    print(header)
 
     # Now step through the dictionary and extract the information as int, float, string or a list of floats
     si_info = {}
@@ -86,7 +85,7 @@ def parseheader(header):
     return si_info
 
 
-# =============================================================================
+#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 # Classes
 
 class XYT(object):
@@ -103,13 +102,16 @@ class XYT(object):
          * nchannels = XYT.nchannels returns number of image channels
     """
 
-    def __init__(self, filestem='', filepath='.', extention="tif", imagesettingsfile=None):
+    def __init__(self, filestem='', filepath='.', extention="tif", imagesettingsfile=None, do_reg = False, imregfunc=None, imregparams=[]):
         """ Initializes the image stack and gathers the meta data
             Inputs
             - filestem: Part of the file name that is shared among all tiffs belonging to the stack (optional, if left out all tiffs in filepath will be included)
             - filepath: Full directory path to the tiffs
             - extention: file extention of the stack
             - imagesettingsfile: manually stored image settings
+            - do_reg: Whether or not to perform registration on the images
+            - imregfunc: Function to use for image registration
+            - imregparams: List of parameters to supply to imregfunc
         """
         super(XYT, self).__init__()
 
@@ -138,9 +140,15 @@ class XYT(object):
             exec(f.read(), settings)
             self._fovsize_for_zoom = settings["fovsize_for_zoom"]
 
+        self.register = do_reg
+        self._imregfunc = None
+        if imregfunc is not None:
+            self.imregfunc = imregfunc
+        self.imregparams = imregparams
+
         self._datatype = np.int16
-        self._channel = 0
-        self._plane = 0
+        self.channel = 0
+        self.plane = 0
 
     # properties
     def __str__(self):
@@ -148,6 +156,11 @@ class XYT(object):
         first_file = self._block_files[0].split(os.path.sep)[-1]
         return "Imagestack of {} {} files, first file: {}\n* Image settings: {}\n* {} frames, {} planes, {} channels, {} x {} pixels".format( self._nblocks, self._extention, first_file, self._imagesettingsfile, self.nframes, self.nplanes, self.nchannels, self.yres, self.xres )
 
+
+    @property
+    def filepath(self):
+        """ Path where to find image files """
+        return self._filepath
 
     @property
     def xres(self):
@@ -188,10 +201,24 @@ class XYT(object):
         return float(self.si_info["scanZoomFactor"])
 
     @property
+    def zstep(self):
+        """ Piezo step along the z-axis. Returns 0 if no (fast) z volume) """
+        if self.nplanes > 1:
+            return float(self.si_info["stackZStepSize"])
+        else:
+            return 0
+
+    @property
     def fovsize(self):
         """ Size of the field of view in micron"""
         if self.zoom in self._fovsize_for_zoom.keys():
-            return self._fovsize_for_zoom[self.zoom]
+            x = self._fovsize_for_zoom[self.zoom]["x"]
+            y = self._fovsize_for_zoom[self.zoom]["y"]
+            # Correct for piezo step tilting y plane
+            if self.nplanes > 1:
+                plane_angle = np.arctan( self.si_info["stackZStepSize"] / y )
+                y = y / np.cos(plane_angle)
+            return { "x": x, "y": y }
         else:
             print("FOV has not been calibrated for zoom {}x, returning np.NaNs".format(self.zoom))
             return { "x": np.NaN, "y": np.NaN }
@@ -200,8 +227,13 @@ class XYT(object):
     def pixelsize(self):
         """ Size of a single pixel in micron """
         if self.zoom in self._fovsize_for_zoom.keys():
-            return { "x": self.xres / self._fovsize_for_zoom[self.zoom]["x"],
-                    "y": self.yres / self._fovsize_for_zoom[self.zoom]["y"] }
+            x = self._fovsize_for_zoom[self.zoom]["x"]
+            y = self._fovsize_for_zoom[self.zoom]["y"]
+            # Correct for piezo step tilting y plane
+            if self.nplanes > 1:
+                plane_angle = np.arctan( self.si_info["stackZStepSize"] / y )
+                y = y / np.cos(plane_angle)
+            return { "x": self.xres / x, "y": self.yres / y }
         else:
             print("FOV has not been calibrated for zoom {}x, returning np.NaNs".format(self.zoom))
             return { "x": np.NaN, "y": np.NaN }
@@ -226,6 +258,52 @@ class XYT(object):
         """ Sets the plane """
         self._plane = int(plane_nr)
 
+    @property
+    def register(self):
+        """ Returns whether or not to register the image data """
+        return self._do_register
+
+    @register.setter
+    def register(self,do_register):
+        """ Tries to load/initialize registration data from suite2p folders when set to true """
+        if do_register:
+            if not hasattr(self._imregfunc, '__call__'):
+                print("Cannot enable registration because no image-registration function has been set.")
+                self._do_register = False
+                return
+        self._do_register = do_register
+
+    @property
+    def imregparams(self):
+        """ Returns the parameters supplied to the image registration function """
+        return self._imregparams
+
+    @imregparams.setter
+    def imregparams(self,imregparams):
+        """ Sets the parameters supplied to the image registration function """
+        if not isinstance(imregparams,list):
+            imregparams = [imregparams,]
+        self._imregparams = imregparams
+
+    @property
+    def imregfunc(self):
+        """ Returns the function that will perform the image registration """
+        return self._imregfunc
+
+    @imregfunc.setter
+    def imregfunc(self,imregfunc):
+        """ Sets the function that will perform the image registration, the function should take three fixed inputs and further params
+            1. The image stack
+            2. The image plane number
+            3. The frames that will be realigned
+            4. Params to be set by imregparams
+        """
+        if not hasattr(imregfunc, '__call__'):
+            print("Cannot set image registration function because the supplied function is not 'callable' (i.e. is not a function).")
+            return
+        self._imregfunc = imregfunc
+
+    # Internal function to load the imaging data using slicing
     def __getitem__(self, indices):
         """ Loads and returns the image data directly from disk """
 
@@ -241,7 +319,7 @@ class XYT(object):
         # tiffs are stored as [ch0-sl0, ch1-sl0, ch0-sl1, ch2-sl1, ch0-sl2 etc]
         start_frame = (self._plane * self.nchannels) + self._channel
         frame_jump = self.nchannels * self.nplanes
-        frame_ixs = frames * frame_jump
+        frame_ixs = start_frame + (frames * frame_jump)
         n_frame_ixs = len(frame_ixs)
         frame_ids = np.arange(n_frame_ixs)
 
@@ -266,6 +344,14 @@ class XYT(object):
                     for ix,id_ in zip( frame_ixs_per_block[bix], frame_ids_per_block[bix] ):
                         imagedata[:,:,id_] = tifffile.data(beg=ix,end=ix+1)
                         bar()
+
+        # Register the stack and return
+        for i in range(10):
+            imagedata[:,:,i] = imagedata[:,:,8]
+
+        if self._do_register:
+            print("called registration")
+            imagedata = self._imregfunc(imagedata, self._plane, frames, *self._imregparams)
 
         # Return the stack
         return imagedata
