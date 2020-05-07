@@ -346,9 +346,6 @@ class XYT(object):
                         bar()
 
         # Register the stack and return
-        for i in range(10):
-            imagedata[:,:,i] = imagedata[:,:,8]
-
         if self._do_register:
             print("called registration")
             imagedata = self._imregfunc(imagedata, self._plane, frames, *self._imregparams)
