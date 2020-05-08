@@ -102,7 +102,7 @@ class XYT(object):
          * nchannels = XYT.nchannels returns number of image channels
     """
 
-    def __init__(self, filestem='', filepath='.', extention="tif", imagesettingsfile=None, do_reg = False, imregfunc=None, imregparams=[]):
+    def __init__(self, filestem='', filepath='.', extention="tif", imagesettingsfile=None, do_reg = False, imregfunc=None, imregparams=[], verbose=False):
         """ Initializes the image stack and gathers the meta data
             Inputs
             - filestem: Part of the file name that is shared among all tiffs belonging to the stack (optional, if left out all tiffs in filepath will be included)
@@ -112,12 +112,14 @@ class XYT(object):
             - do_reg: Whether or not to perform registration on the images
             - imregfunc: Function to use for image registration
             - imregparams: List of parameters to supply to imregfunc
+            - verbose: print warnings
         """
         super(XYT, self).__init__()
 
         # Set the filepath
         self._filepath = filepath
         self._extention = extention
+        self._verbose = verbose
 
         # Find the tiff files
         self._block_files = sorted( glob.glob( os.path.join( self._filepath, filestem+'*.'+extention ) ) )
@@ -128,6 +130,14 @@ class XYT(object):
             header = (tifffile.description(0))
             self.si_info = parseheader(header)
         self._nframesperblock = self.si_info["loggingFramesPerFile"]
+
+        # correct number of frames if discrepancy detected between header and block files
+        self._nframes = int(self.si_info["fastZNumVolumes"])
+        n_frames_from_blocks = int((self._nframesperblock * self._nblocks) / (self.nplanes * self.nchannels))
+        if n_frames_from_blocks != self.nframes:
+            if self._verbose:
+                print("#frames/volumes in header ({}); inferred different number from tiff blocks ({})".format( self.nframes, n_frames_from_blocks ))
+            self._nframes = n_frames_from_blocks
 
         # Load default settings and internal variables
         if imagesettingsfile is None:
@@ -180,7 +190,7 @@ class XYT(object):
     @property
     def nframes(self):
         """ Number of frames per slice and channel """
-        return int(self.si_info["fastZNumVolumes"])
+        return self._nframes
 
     @property
     def nplanes(self):
