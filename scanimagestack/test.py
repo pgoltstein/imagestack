@@ -12,7 +12,11 @@ Created on Thu Jan 30, 2020
 @author: pgoltstein
 """
 
+import sys
+sys.path.append('../suite2psupport')
 import si_stack
+import suite2psupport
+
 import argparse
 
 # =============================================================================
@@ -30,7 +34,9 @@ args = parser.parse_args()
 print("\nTesting scanimagestack:")
 Im = si_stack.XYT(filestem=args.filestem, filepath=args.filepath, extention="tif")
 print("\nReading the every 50th frame from the first 1000 frames:")
-a=Im[:1000:50]
+a=Im[:250:25]
+print("dtype {}".format(a.dtype))
+print("Shape of stack: {}".format(a.shape))
 
 print("\nTesting properties:")
 print("- xres: {}".format(Im.xres))
@@ -46,6 +52,13 @@ print("- Pixel size: {}".format(Im.pixelsize))
 print("- current channel: {}".format(Im.channel))
 print("- current plane: {}".format(Im.plane))
 
+Im.imregparams = suite2psupport.load_suite2p_ops( Im.filepath )
+Im.imregfunc = suite2psupport.shift_imagedata
 Im.register = True
+
+print("\nReading the every 50th frame from the first 1000 frames, now with registration:")
+b=Im[:250:25]
+print("dtype {}".format(b.dtype))
+print("Shape of stack: {}".format(b.shape))
 
 print("\nDone testing\n")
