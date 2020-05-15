@@ -149,6 +149,7 @@ class XYT(object):
         with open(imagesettingsfile) as f:
             exec(f.read(), settings)
             self._fovsize_for_zoom = settings["fovsize_for_zoom"]
+            self._laserpowers_for_wavelength = settings["laserpowers_for_wavelength"]
 
         self.register = do_reg
         self._imregfunc = None
@@ -239,14 +240,31 @@ class XYT(object):
         if self.zoom in self._fovsize_for_zoom.keys():
             x = self._fovsize_for_zoom[self.zoom]["x"]
             y = self._fovsize_for_zoom[self.zoom]["y"]
-            # Correct for piezo step tilting y plane
-            if self.nplanes > 1:
-                plane_angle = np.arctan( self.si_info["stackZStepSize"] / y )
-                y = y / np.cos(plane_angle)
-            return { "x": self.xres / x, "y": self.yres / y }
         else:
+            # Try and interpolate from known values
+            # --> still needs to be implemented
             print("FOV has not been calibrated for zoom {}x, returning np.NaNs".format(self.zoom))
             return { "x": np.NaN, "y": np.NaN }
+        # Correct for piezo step tilting y plane
+        if self.nplanes > 1:
+            plane_angle = np.arctan( self.si_info["stackZStepSize"] / y )
+            y = y / np.cos(plane_angle)
+        return { "x": self.xres / x, "y": self.yres / y }
+
+    @property
+    def laserpower(self):
+        """ Laser power in percentage """
+        return float(self.si_info["beamPowers"])
+
+    def get_laserpower(self, wavelength):
+        """ Laser power for the used wavelength """
+        if wavelength not in self._laserpowers_for_wavelength.keys():
+            print("Laserpower has not been calibrated for wavelength {}nm, returning np.NaN".format(wavelength))
+            return np.NaN
+        if self.laserpower not in self._laserpowers_for_wavelength[wavelength].keys():
+            print("Laserpower at wavelength {} nm, has not been calibrated for value {}%, returning np.NaN".format( wavelength, self.laserpower ))
+            return np.NaN
+        return float( self._laserpowers_for_wavelength[wavelength][self.laserpower] )
 
     @property
     def channel(self):

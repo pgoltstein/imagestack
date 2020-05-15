@@ -49,6 +49,7 @@ print("- zoom: {}".format(Im.zoom))
 print("- zstep: {}".format(Im.zstep))
 print("- FOV size: {}".format(Im.fovsize))
 print("- Pixel size: {}".format(Im.pixelsize))
+print("- Laser power ({}%): {} W".format(Im.laserpower, Im.get_laserpower(910)))
 print("- current channel: {}".format(Im.channel))
 print("- current plane: {}".format(Im.plane))
 
