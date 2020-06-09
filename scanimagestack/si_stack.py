@@ -395,7 +395,7 @@ class XYT(object):
         # Loop block files, and frame indices to load all requested frames
         imagedata = np.zeros((self.yres,self.xres,n_frame_ixs),dtype=self._datatype)
         # with alive_bar(n_frame_ixs) as bar:
-        with tqdm(total=n_frame_ixs, desc="Reading:", unit="Frames") as bar:
+        with tqdm(total=n_frame_ixs, desc="Reading", unit="Fr") as bar:
             for bnr,bix in zip(block_numbers,block_indexes):
                 with ScanImageTiffReader(self._block_files[bnr]) as tifffile:
                     for ix,id_ in zip( frame_ixs_per_block[bix], frame_ids_per_block[bix] ):
