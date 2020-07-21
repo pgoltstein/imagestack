@@ -11,6 +11,6 @@ setup(  name='scanimagestack',
         author_email='xpieter@mac.com',
         license='GNU GENERAL PUBLIC LICENSE Version 3',
         packages=['scanimagestack'],
-        install_requires=['numpy','scanimage-tiff-reader','alive_progress'],
+        install_requires=['numpy','scanimage-tiff-reader','tqdm'],
         zip_safe=False
         )
