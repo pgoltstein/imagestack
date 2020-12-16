@@ -276,7 +276,7 @@ class XYT(object):
         if self.nplanes > 1:
             plane_angle = np.arctan( self.si_info["stackZStepSize"] / y )
             y = y / np.cos(plane_angle)
-        return { "x": self.xres / x, "y": self.yres / y }
+        return { "x": x/self.xres, "y": y/self.yres }
 
     @property
     def laserpower(self):
