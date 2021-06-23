@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 
-This script tests the module scanimagestack.
+This script tests the class XYT from the module scanimagestack.
 
 Run from command line as
->> python -m test fullpath filestem
+>> python test.py fullpath filestem
 
 Created on Thu Jan 30, 2020
 
@@ -22,7 +22,7 @@ import argparse
 # =============================================================================
 # Arguments
 
-parser = argparse.ArgumentParser( description = "This script tests the module scanimagestack. Run from command line as >> python -m test fullpath filestem. Written by Pieter Goltstein - February 2020")
+parser = argparse.ArgumentParser( description = "This script tests the class XYT from the module scanimagestack. Written by Pieter Goltstein - February 2020")
 parser.add_argument('filepath', type=str, help= 'path to the tiff folder')
 parser.add_argument('filestem', type=str, help= 'filestem of tiffs')
 args = parser.parse_args()
@@ -64,7 +64,7 @@ Im.register = True
 
 print("\nReading the every 50th frame from the first 1000 frames, now with registration:")
 b=Im[:250:25]
-print("dtype {}".format(b.dtype))
-print("Shape of stack: {}".format(b.shape))
+print("data type of image data: {}".format(b.dtype))
+print("Shape of the stack: {}".format(b.shape))
 
 print("\nDone testing\n")

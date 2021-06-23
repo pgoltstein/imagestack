@@ -402,7 +402,6 @@ class XYT(object):
 
         # Register the stack and return
         if self._do_register:
-            print("called registration")
             imagedata = self._imregfunc(imagedata, self._plane, frames, *self._imregparams)
 
         # Return the stack
