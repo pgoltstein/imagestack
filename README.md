@@ -29,6 +29,18 @@ scanimagestack (module)
     * nchannels = imagestack.nchannels returns number of image channels
 
 
+suite2psupport (module)  
+This handles the registration using suite2p. In order for this module to work, two lines of code should be added to the ```__init__.py``` file that is in the suite2p folder called registration.
+
+```
+# Add these lines to \suite2p\registration\__init__.py
+from .rigid import shift_frame
+from .nonrigid import transform_data
+from .bidiphase import shift
+```
+
+
+
 __Requires the following python packages__
 * os
 * glob

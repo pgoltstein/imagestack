@@ -294,6 +294,16 @@ class XYT(object):
         return float( self._laserpowers_for_wavelength[wavelength][self.laserpower] )
 
     @property
+    def verbose(self):
+        """ Returns the verbose flag """
+        return self._verbose
+
+    @verbose.setter
+    def verbose(self,verbose_bool):
+        """ Sets the verbose flag """
+        self._verbose = bool(verbose_bool)
+
+    @property
     def channel(self):
         """ Returns the currently selected channel """
         return self._channel
@@ -393,13 +403,19 @@ class XYT(object):
 
         # Loop block files, and frame indices to load all requested frames
         imagedata = np.zeros((self.yres,self.xres,n_frame_ixs),dtype=self._datatype)
-        with tqdm(total=n_frame_ixs, desc="Reading", unit="Fr") as bar:
+        if self._verbose:
+            with tqdm(total=n_frame_ixs, desc="Reading", unit="Fr") as bar:
+                for bnr,bix in zip(block_numbers,block_indexes):
+                    with ScanImageTiffReader(self._block_files[bnr]) as tifffile:
+                        for ix,id_ in zip( frame_ixs_per_block[bix], frame_ids_per_block[bix] ):
+                            imagedata[:,:,id_] = tifffile.data(beg=ix,end=ix+1)
+                            bar.update(1)
+        else:
             for bnr,bix in zip(block_numbers,block_indexes):
                 with ScanImageTiffReader(self._block_files[bnr]) as tifffile:
                     for ix,id_ in zip( frame_ixs_per_block[bix], frame_ids_per_block[bix] ):
                         imagedata[:,:,id_] = tifffile.data(beg=ix,end=ix+1)
-                        bar.update(1)
-
+    
         # Register the stack and return
         if self._do_register:
             imagedata = self._imregfunc(imagedata, self._plane, frames, *self._imregparams)

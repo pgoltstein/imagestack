@@ -15,7 +15,7 @@ Created on Thu May 7, 2020
 # Imports
 import os.path
 import numpy as np
-from suite2p.registration import rigid, nonrigid
+from suite2p.registration import rigid, nonrigid, shift
 
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -35,6 +35,7 @@ def shift_imagedata( imagedata, plane_no, frames, suite2p_ops ):
     """
 
     # Get parameters
+    bidiphase = suite2p_ops[plane_no]['bidiphase'].astype(np.int)
     xmax = suite2p_ops[plane_no]['xoff'][frames].astype(np.int)
     ymax = suite2p_ops[plane_no]['yoff'][frames].astype(np.int)
     if suite2p_ops[plane_no]['nonrigid']:
@@ -49,6 +50,9 @@ def shift_imagedata( imagedata, plane_no, frames, suite2p_ops ):
 
     # old suite2p
     # imagedata = register.apply_shifts(imagedata, suite2p_ops[plane_no], ymax, xmax, ymax1, xmax1)
+
+    # Correct phase shift
+    shift(imagedata, bidiphase)
 
     # New suite2p -> rigid registration step
     for frame_no, (dy, dx) in enumerate(zip(ymax, xmax)):
