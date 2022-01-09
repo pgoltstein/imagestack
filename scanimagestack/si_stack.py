@@ -121,6 +121,8 @@ class XYT(object):
         self._extention = extention
         self._verbose = verbose
 
+        self._nchannelswarningshown = False
+
         # Find the tiff files
         self._block_files = sorted( glob.glob( os.path.join( self._filepath, filestem+'*.'+extention ) ) )
         self._nblocks = len(self._block_files)
@@ -204,7 +206,9 @@ class XYT(object):
     @property
     def nchannels(self):
         """ Number of channels """
-        print("Warning: si_stack.py, class 'XYT', property 'nchannels' only returns 1 (for now, should be fixed)")
+        if not self._nchannelswarningshown:
+            print("Warning: si_stack.py, class 'XYT', property 'nchannels' only returns 1 (for now, should be fixed)")
+            self._nchannelswarningshown = True
         #return int(self.si_info["channelsSave"])
         return 1
 
