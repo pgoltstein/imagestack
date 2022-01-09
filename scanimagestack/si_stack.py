@@ -204,7 +204,9 @@ class XYT(object):
     @property
     def nchannels(self):
         """ Number of channels """
-        return int(self.si_info["channelsSave"])
+        disp("\n\nWarninng!!!\n\nFix this!!!\n\n look up how multi channel recordings are represented\n\n\n")
+        #return int(self.si_info["channelsSave"])
+        return 1
 
     @property
     def zoom(self):
@@ -415,7 +417,7 @@ class XYT(object):
                 with ScanImageTiffReader(self._block_files[bnr]) as tifffile:
                     for ix,id_ in zip( frame_ixs_per_block[bix], frame_ids_per_block[bix] ):
                         imagedata[:,:,id_] = tifffile.data(beg=ix,end=ix+1)
-    
+
         # Register the stack and return
         if self._do_register:
             imagedata = self._imregfunc(imagedata, self._plane, frames, *self._imregparams)
