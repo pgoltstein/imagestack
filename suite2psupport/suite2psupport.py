@@ -52,7 +52,8 @@ def shift_imagedata( imagedata, plane_no, frames, suite2p_ops ):
     # imagedata = register.apply_shifts(imagedata, suite2p_ops[plane_no], ymax, xmax, ymax1, xmax1)
 
     # Correct phase shift
-    shift(imagedata, bidiphase)
+    if bidiphase != 0:
+        shift(imagedata, bidiphase)
 
     # New suite2p -> rigid registration step
     for frame_no, (dy, dx) in enumerate(zip(ymax, xmax)):
