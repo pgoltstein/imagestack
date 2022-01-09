@@ -204,7 +204,7 @@ class XYT(object):
     @property
     def nchannels(self):
         """ Number of channels """
-        disp("\n\nWarninng!!!\n\nFix this!!!\n\n look up how multi channel recordings are represented\n\n\n")
+        print("\n\nWarninng!!!\n\nFix this!!!\n\n look up how multi channel recordings are represented\n\nNow always pretening to be a single stack recording\n\n\n")
         #return int(self.si_info["channelsSave"])
         return 1
 
