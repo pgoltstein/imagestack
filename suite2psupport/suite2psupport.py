@@ -26,6 +26,9 @@ def load_suite2p_ops( filepath ):
     """
     opsfile = os.path.join( filepath, "suite2p", "ops1.npy" )
     ops = np.load( opsfile, allow_pickle=True)
+    # Dealing with zero-length numpy array
+    if not ops.shape:
+        ops = np.array([ops[()],])
     print("Loaded: {}".format(opsfile))
     return ops
 
@@ -33,9 +36,14 @@ def load_suite2p_ops( filepath ):
 def shift_imagedata( imagedata, plane_no, frames, suite2p_ops ):
     """ Realignes image data to parameters in the ops dictionary
     """
-
+    
+    # Display ops
+    # print('Displaying ops')
+    # for k,v in suite2p_ops[plane_no].items():
+    #     print("{}: {}".format(k,v))
+    
     # Get parameters
-    bidiphase = suite2p_ops[plane_no]['bidiphase'].astype(np.int)
+    bidiphase = int(suite2p_ops[plane_no]['bidiphase'])
     xmax = suite2p_ops[plane_no]['xoff'][frames].astype(np.int)
     ymax = suite2p_ops[plane_no]['yoff'][frames].astype(np.int)
     if suite2p_ops[plane_no]['nonrigid']:

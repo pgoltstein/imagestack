@@ -328,13 +328,16 @@ class XYT(object):
 
     @property
     def plane(self):
-        """ Returns the currently selected image plane """
+        """ Returns the currently selected image plane, zero-based """
         return self._plane
 
     @plane.setter
     def plane(self,plane_nr):
-        """ Sets the plane """
-        self._plane = int(plane_nr)
+        """ Sets the plane, zero-based """
+        if plane_nr < self.nplanes:
+            self._plane = int(plane_nr)
+        else:
+            print("!!! Warning, tried to set plane to {} (zero-based), but stack has only {} planes !!!".format(plane_nr,self.nplanes))
 
     @property
     def register(self):
