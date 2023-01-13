@@ -62,19 +62,22 @@ def parseheader(header):
         # Find match using reg-ex
         match = rx_dict[key].search(header)
         if match:
-            print(key)
+
             # floating point numbers
             if key in ["scanZoomFactor", "scanFrameRate", "beamPowers", "stackZEndPos", "stackZStartPos", "stackZStepSize"]:
                 si_info[key] = float(match.group(key))
+
             # strings
             elif key in ["triggerClockTimeFirst","loggingFileStem"]:
                 si_info[key] = str(match.group(key)).strip('\'')
+
             # list of floats
             elif key in ["motorPosition","pmtGain"]:
                 positions = str(match.group(key)).strip('[]')
                 si_info[key] = []
                 for pos in positions.split(' '):
                     si_info[key].append(float(pos))
+
             # channelsSave can be both int or list of ints, return as list always
             elif key in ["channelsSave",]:
                 if match.group(key).isdigit():
@@ -83,6 +86,7 @@ def parseheader(header):
                     chan_list = match.group(key).strip("[]").split(";")
                     chan_list = [int(ch) for ch in chan_list]
                     si_info[key] = chan_list
+
             # otherwise integer
             else:
                 si_info[key] = int(match.group(key))
