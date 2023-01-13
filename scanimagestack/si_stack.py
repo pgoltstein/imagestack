@@ -396,7 +396,8 @@ class XYT(object):
 
         # Check if the requested frames do not exceed the stack
         if indices.stop > self.nframes:
-            raise IndexError("Requested frames {}, but stack has only {} frames".format(indices,self.nframes))
+            print("!!! Requested frames {}, but stack has only {} frames, returning empty matrix !!!".format(indices,self.nframes))
+            # raise IndexError("Requested frames {}, but stack has only {} frames".format(indices,self.nframes))
 
         # Use the provided slice object to get the requested frames
         if isinstance(indices, slice):
