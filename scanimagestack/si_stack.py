@@ -33,7 +33,6 @@ def parseheader(header):
         Returns
         - si_info: A dictionary holding the scanimage named variables in python format (int, float, list[floats])
     """
-    print(header)
 
     # Define the regular expressions needed to extract the information
     rx_dict = {
@@ -344,7 +343,7 @@ class XYT(object):
         if plane_nr < self.nplanes:
             self._plane = int(plane_nr)
         else:
-            print("!!! Warning, tried to set plane to {} (zero-based), but stack has only {} planes !!!".format(plane_nr,self.nplanes))
+            print("!!! Warning, tried to set plane to {} (zero-based), but stack has only {} planes !!!\nCurrent plane remains set to {} ".format(plane_nr,self.nplanes,self._plane))
 
     @property
     def register(self):
@@ -356,7 +355,7 @@ class XYT(object):
         """ Tries to load/initialize registration data from suite2p folders when set to true """
         if do_register:
             if not hasattr(self._imregfunc, '__call__'):
-                print("Cannot enable registration because no image-registration function has been set.")
+                print("!!! Cannot register images because no image-registration function has been set. !!!")
                 self._do_register = False
                 return
         self._do_register = do_register
@@ -395,6 +394,10 @@ class XYT(object):
     def __getitem__(self, indices):
         """ Loads and returns the image data directly from disk """
 
+        # Check if the requested frames do not exceed the stack
+        if indices.stop > self.nframes:
+            raise IndexError("Requested frames {}, but stack has only {} frames".format(indices,self.nframes))
+
         # Use the provided slice object to get the requested frames
         if isinstance(indices, slice):
             frames = np.arange(self.nframes)[indices]
@@ -410,8 +413,6 @@ class XYT(object):
         frame_ixs = start_frame + (frames * frame_jump)
         n_frame_ixs = len(frame_ixs)
         frame_ids = np.arange(n_frame_ixs)
-        print(frames)
-        print(frame_ixs)
 
         # Identify the block files to open, and which frames to load
         block_ixs_per_frame = np.floor(frame_ixs / self._nframesperblock).astype(np.int)

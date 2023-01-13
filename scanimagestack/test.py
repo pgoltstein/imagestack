@@ -62,9 +62,6 @@ Im.imregparams = suite2psupport.load_suite2p_ops( Im.filepath )
 Im.imregfunc = suite2psupport.shift_imagedata
 Im.register = True
 
-print("\nReading frame 60000-60010 with registration:")
-b=Im[60000:60010]
-
 print("\nReading the every 25th frame from the first 250 frames, now with registration:")
 b=Im[:250:25]
 print("data type of image data: {}".format(b.dtype))
