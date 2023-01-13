@@ -13,7 +13,7 @@ Created on Thu May 7, 2020
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 # Imports
-import os.path
+import os.path, glob
 import numpy as np
 from suite2p.registration import rigid, nonrigid, shift
 
@@ -24,12 +24,23 @@ from suite2p.registration import rigid, nonrigid, shift
 def load_suite2p_ops( filepath ):
     """ Load the multiplane ops file
     """
-    opsfile = os.path.join( filepath, "suite2p", "ops1.npy" )
-    ops = np.load( opsfile, allow_pickle=True)
-    # Dealing with zero-length numpy array
-    if not ops.shape:
-        ops = np.array([ops[()],])
-    print("Loaded: {}".format(opsfile))
+    
+    # Find planes
+    ops = []
+    plane_query = os.path.join( filepath, "suite2p", "plane*" )
+    plane_folders = glob.glob(plane_query)
+    for plane_folder in plane_folders:
+        opsfile = os.path.join( plane_folder, "ops.npy" )
+        ops_plane = np.load( opsfile, allow_pickle=True)
+        
+        # Dealing with zero-length numpy array and adding to ops
+        if not ops_plane.shape:
+            ops.append( ops_plane[()] )
+        else:
+            ops.append( ops_plane[0] )
+            
+    # Convert to numpy array to be compatible with suite2p
+    ops = np.array(ops)            
     return ops
 
 
