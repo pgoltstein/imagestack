@@ -394,18 +394,29 @@ class XYT(object):
     def __getitem__(self, indices):
         """ Loads and returns the image data directly from disk """
 
-        # Check if the requested frames do not exceed the stack
-        if indices.stop > self.nframes:
-            print("!!! Requested frames {}, but stack has only {} frames, returning empty matrix !!!".format(indices,self.nframes))
-            # raise IndexError("Requested frames {}, but stack has only {} frames".format(indices,self.nframes))
-
         # Use the provided slice object to get the requested frames
+        n_frames_exceeded = False
         if isinstance(indices, slice):
+            if indices.stop > self.nframes:
+                n_frames_exceeded = True
+                n_frames_requested = len(range(indices.start,indices.stop,indices.step))
             frames = np.arange(self.nframes)[indices]
         elif isinstance(indices, list) or isinstance(indices, tuple):
+            if max(indices) > self.nframes:
+                n_frames_exceeded = True
+                n_frames_requested = len(indices)
             frames = np.array(indices)
         else:
+            if indices > self.nframes:
+                n_frames_exceeded = True
+                n_frames_requested = 1
             frames = np.array([indices,])
+
+        # Check if the requested frames do not exceed the stack
+        if n_frames_exceeded:
+            print("!!! Requested frames {}, but stack has only {} frames, returning empty matrix !!!".format(indices,self.nframes))
+            imagedata = np.zeros((self.yres,self.xres,n_frames_requested),dtype=self._datatype)
+            # raise IndexError("Requested frames {}, but stack has only {} frames".format(indices,self.nframes))
 
         # Define the indices of the requested frames
         # tiffs are stored as [ch0-sl0, ch1-sl0, ch0-sl1, ch2-sl1, ch0-sl2 etc]
