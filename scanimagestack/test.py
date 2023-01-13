@@ -62,6 +62,11 @@ Im.imregparams = suite2psupport.load_suite2p_ops( Im.filepath )
 Im.imregfunc = suite2psupport.shift_imagedata
 Im.register = True
 
+print("\nReading image 1000000 with registration:")
+b=Im[1000000]
+print("data type of image data: {}".format(b.dtype))
+print("Shape of the stack: {}".format(b.shape))
+
 print("\nReading image 1000000 to 1000010 with registration:")
 b=Im[1000000:1000010]
 print("data type of image data: {}".format(b.dtype))

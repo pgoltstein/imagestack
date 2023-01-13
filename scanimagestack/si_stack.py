@@ -397,9 +397,12 @@ class XYT(object):
         # Use the provided slice object to get the requested frames
         n_frames_exceeded = False
         if isinstance(indices, slice):
-            if indices.stop > self.nframes:
+            start = 0 if indices.start is None else indices.start
+            stop = self.nframes if indices.stop is None else indices.stop
+            step = 1 if indices.step is None else indices.step
+            if start > self.nframes or stop > self.nframes:
                 n_frames_exceeded = True
-                n_frames_requested = len(range(indices.start,indices.stop,indices.step))
+                n_frames_requested = len(range(start,stop,step))
             frames = np.arange(self.nframes)[indices]
         elif isinstance(indices, list) or isinstance(indices, tuple):
             if max(indices) > self.nframes:
@@ -414,8 +417,8 @@ class XYT(object):
 
         # Check if the requested frames do not exceed the stack
         if n_frames_exceeded:
-            print("!!! Requested frames {}, but stack has only {} frames, returning empty matrix !!!".format(indices,self.nframes))
-            imagedata = np.zeros((self.yres,self.xres,n_frames_requested),dtype=self._datatype)
+            print("!!! Requested frames {}, but stack has only {} frames, returning {} 'zero' frames !!!".format(indices,self.nframes,n_frames_requested))
+            return np.zeros((self.yres,self.xres,n_frames_requested),dtype=self._datatype)
             # raise IndexError("Requested frames {}, but stack has only {} frames".format(indices,self.nframes))
 
         # Define the indices of the requested frames
