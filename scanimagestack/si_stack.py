@@ -33,6 +33,7 @@ def parseheader(header):
         Returns
         - si_info: A dictionary holding the scanimage named variables in python format (int, float, list[floats])
     """
+    print(header)
 
     # Define the regular expressions needed to extract the information
     rx_dict = {
@@ -41,6 +42,7 @@ def parseheader(header):
         "scanFrameRate": re.compile(r'scanFrameRate = (?P<scanFrameRate>\d+.?\d*)'),
         "channelsSave": re.compile(r'channelsSave = (?P<channelsSave>.*)'),
         "fastZNumVolumes": re.compile(r'fastZNumVolumes = (?P<fastZNumVolumes>\d+)'),
+        "acqNumFrames": re.compile(r'acqNumFrames = (?P<acqNumFrames>\d+)'),
         "fastZEnable": re.compile(r'fastZEnable = (?P<fastZEnable>\d+)'),
         "stackZStepSize": re.compile(r'stackZStepSize = (?P<stackZStepSize>\d+)'),
         "triggerClockTimeFirst": re.compile(r'triggerClockTimeFirst = (?P<triggerClockTimeFirst>\'\d+-\d+-\d+ \d+:\d+:\d+.\d+\')'),
@@ -142,10 +144,15 @@ class XYT(object):
         with ScanImageTiffReader( self._block_files[0] ) as tifffile:
             header = (tifffile.description(0))
             self.si_info = parseheader(header)
-        self._nframesperblock = self.si_info["loggingFramesPerFile"]
+        self._nframesperblock = self.si_info["loggingFramesPerFile"] * self.nchannels
+
+        # Get number of frames or volumes depending on whether stack or not
+        if self.nplanes > 1:
+            self._nframes = int(self.si_info["fastZNumVolumes"])
+        else:
+            self._nframes = int(self.si_info["acqNumFrames"])
 
         # correct number of frames if discrepancy detected between header and block files
-        self._nframes = int(self.si_info["fastZNumVolumes"])
         n_frames_from_blocks = int((self._nframesperblock * self._nblocks) / (self.nplanes * self.nchannels))
         if n_frames_from_blocks != self.nframes:
             if self._verbose:
@@ -403,6 +410,8 @@ class XYT(object):
         frame_ixs = start_frame + (frames * frame_jump)
         n_frame_ixs = len(frame_ixs)
         frame_ids = np.arange(n_frame_ixs)
+        print(frames)
+        print(frame_ixs)
 
         # Identify the block files to open, and which frames to load
         block_ixs_per_frame = np.floor(frame_ixs / self._nframesperblock).astype(np.int)

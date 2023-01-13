@@ -32,10 +32,10 @@ args = parser.parse_args()
 # Code
 
 print("\nTesting scanimagestack:")
-Im = si_stack.XYT(filestem=args.filestem, filepath=args.filepath, extention="tif")
+Im = si_stack.XYT(filestem=args.filestem, filepath=args.filepath, extention="tif", verbose=True)
 print("\nSelecting the third plane of image stack (zero-based)")
 Im.plane = 2
-print("\nReading the every 50th frame from the first 1000 frames:")
+print("\nReading the every 5th frame from the first 250 frames:")
 a=Im[:250:5]
 print("dtype {}".format(a.dtype))
 print("Shape of stack: {}".format(a.shape))
@@ -62,7 +62,10 @@ Im.imregparams = suite2psupport.load_suite2p_ops( Im.filepath )
 Im.imregfunc = suite2psupport.shift_imagedata
 Im.register = True
 
-print("\nReading the every 50th frame from the first 1000 frames, now with registration:")
+print("\nReading frame 60000-60010 with registration:")
+b=Im[60000:60010]
+
+print("\nReading the every 25th frame from the first 250 frames, now with registration:")
 b=Im[:250:25]
 print("data type of image data: {}".format(b.dtype))
 print("Shape of the stack: {}".format(b.shape))
