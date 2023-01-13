@@ -39,7 +39,7 @@ def parseheader(header):
         "stackNumSlices": re.compile(r'stackNumSlices = (?P<stackNumSlices>\d+)'),
         "scanZoomFactor": re.compile(r'scanZoomFactor = (?P<scanZoomFactor>\d+.?\d*)'),
         "scanFrameRate": re.compile(r'scanFrameRate = (?P<scanFrameRate>\d+.?\d*)'),
-        "channelsSave": re.compile(r'channelsSave = (?P<channelsSave>\d+)'),
+        "channelsSave": re.compile(r'channelsSave = (?P<channelsSave>.*)'),
         "fastZNumVolumes": re.compile(r'fastZNumVolumes = (?P<fastZNumVolumes>\d+)'),
         "fastZEnable": re.compile(r'fastZEnable = (?P<fastZEnable>\d+)'),
         "stackZStepSize": re.compile(r'stackZStepSize = (?P<stackZStepSize>\d+)'),
@@ -62,6 +62,7 @@ def parseheader(header):
         # Find match using reg-ex
         match = rx_dict[key].search(header)
         if match:
+            print(key)
             # floating point numbers
             if key in ["scanZoomFactor", "scanFrameRate", "beamPowers", "stackZEndPos", "stackZStartPos", "stackZStepSize"]:
                 si_info[key] = float(match.group(key))
@@ -74,6 +75,14 @@ def parseheader(header):
                 si_info[key] = []
                 for pos in positions.split(' '):
                     si_info[key].append(float(pos))
+            # channelsSave can be both int or list of ints, return as list always
+            elif key in ["channelsSave",]:
+                if match.group(key).isdigit():
+                    si_info[key] = [int(match.group(key)),]
+                else:
+                    chan_list = match.group(key).strip("[]").split(";")
+                    chan_list = [int(ch) for ch in chan_list]
+                    si_info[key] = chan_list
             # otherwise integer
             else:
                 si_info[key] = int(match.group(key))
