@@ -15,7 +15,7 @@ Created on Thu May 7, 2020
 # Imports
 import os.path, glob
 import numpy as np
-from suite2p.registration import rigid, nonrigid, shift
+from suite2p.registration import rigid, nonrigid, bidiphase
 
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -24,7 +24,7 @@ from suite2p.registration import rigid, nonrigid, shift
 def load_suite2p_ops( filepath ):
     """ Load the multiplane ops file
     """
-    
+
     # Find planes
     ops = []
     plane_query = os.path.join( filepath, "suite2p", "plane*" )
@@ -32,29 +32,29 @@ def load_suite2p_ops( filepath ):
     for plane_folder in plane_folders:
         opsfile = os.path.join( plane_folder, "ops.npy" )
         ops_plane = np.load( opsfile, allow_pickle=True)
-        
+
         # Dealing with zero-length numpy array and adding to ops
         if not ops_plane.shape:
             ops.append( ops_plane[()] )
         else:
             ops.append( ops_plane[0] )
-            
+
     # Convert to numpy array to be compatible with suite2p
-    ops = np.array(ops)            
+    ops = np.array(ops)
     return ops
 
 
 def shift_imagedata( imagedata, plane_no, frames, suite2p_ops ):
     """ Realignes image data to parameters in the ops dictionary
     """
-    
+
     # Display ops
     # print('Displaying ops')
     # for k,v in suite2p_ops[plane_no].items():
     #     print("{}: {}".format(k,v))
-    
+
     # Get parameters
-    bidiphase = int(suite2p_ops[plane_no]['bidiphase'])
+    bidiphase_par = int(suite2p_ops[plane_no]['bidiphase'])
     xmax = suite2p_ops[plane_no]['xoff'][frames].astype(np.int)
     ymax = suite2p_ops[plane_no]['yoff'][frames].astype(np.int)
     if suite2p_ops[plane_no]['nonrigid']:
@@ -71,8 +71,8 @@ def shift_imagedata( imagedata, plane_no, frames, suite2p_ops ):
     # imagedata = register.apply_shifts(imagedata, suite2p_ops[plane_no], ymax, xmax, ymax1, xmax1)
 
     # Correct phase shift
-    if bidiphase != 0:
-        shift(imagedata, bidiphase)
+    if bidiphase_par != 0:
+        bidiphase.shift(imagedata, bidiphase_par)
 
     # New suite2p -> rigid registration step
     for frame_no, (dy, dx) in enumerate(zip(ymax, xmax)):
