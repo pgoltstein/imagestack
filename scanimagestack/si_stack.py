@@ -430,7 +430,7 @@ class XYT(object):
         frame_ids = np.arange(n_frame_ixs)
 
         # Identify the block files to open, and which frames to load
-        block_ixs_per_frame = np.floor(frame_ixs / self._nframesperblock).astype(np.int)
+        block_ixs_per_frame = np.floor(frame_ixs / self._nframesperblock).astype(int)
         frame_ixs_in_block = np.mod(frame_ixs, self._nframesperblock)
         block_numbers,block_inverse = np.unique(block_ixs_per_frame, return_inverse=True)
         block_indexes = list(range(len(block_numbers)))
